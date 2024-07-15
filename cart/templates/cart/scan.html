@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture Body Measurements</title>
+    <!-- Include Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Include tracking.js -->
+    <script src="https://cdn.jsdelivr.net/npm/tracking/build/tracking.js"></script>
+    <!-- Custom CSS -->
+    <style>
+        #videoCanvas {
+            width: 100%;
+            max-width: 640px;
+            margin: auto;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto py-8">
+        <h1 class="text-3xl font-bold mb-4">Capture Body Measurements</h1>
+        <div id="videoContainer">
+            <video id="video" width="640" height="480" autoplay></video>
+            <canvas id="videoCanvas" width="640" height="480"></canvas>
+        </div>
+        <button id="captureBtn" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Capture Measurement</button>
+        <div id="measurementResult" class="mt-4"></div>
+    </div>
+
+    <script>
+        // Get video and canvas elements
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('videoCanvas');
+        const context = canvas.getContext('2d');
+
+        // Initialize tracking.js
+        tracking.track('#video', new tracking.ObjectTracker('body'));
+
+        // Event listener for when tracking.js finds a body
+        tracking.track('#video', new tracking.ObjectTracker('body'));
+        tracking.track('#video', tracker);
+        tracker.on('track', function(event) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            event.data.forEach(function(rect) {
+                context.strokeStyle = '#ff0000';
+                context.strokeRect(rect.x, rect.y, rect.width, rect.height);
+            });
+        });
+
+        // Function to capture measurement
+        document.getElementById('captureBtn').addEventListener('click', function() {
+            const measurementResult = document.getElementById('measurementResult');
+            const canvasData = canvas.toDataURL('image/jpeg');
+
+            // Assuming you want to send the captured image to a server for processing,
+            // you can use fetch to send a POST request to your Flask server.
+            // Replace 'your_server_url' with the actual URL of your Flask server.
+            fetch('your_server_url', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image: canvasData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display the measurement result
+                measurementResult.innerHTML = `
+                    <p>Measurement captured successfully:</p>
+                    <p>Height: ${data.height} cm</p>
+                    <p>Width: ${data.width} cm</p>
+                    <p>Image URL: ${data.imageUrl}</p>
+                `;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                measurementResult.textContent = 'Error capturing measurement. Please try again.';
+            });
+        });
+    </script>
+</body>
+</html>
